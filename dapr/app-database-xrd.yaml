@@ -1,0 +1,44 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xdatabases.redis.com
+spec:
+  group: redis.com
+  names:
+    kind: xDatabase
+    plural: xdatabases
+    shortNames:
+      - "xdb"
+      - "xdbs"
+  claimNames:
+    kind: DatabaseClaim
+    plural: databaseclaims
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .spec.parameters.size
+      name: SIZE
+      type: string
+    - jsonPath: .spec.parameters.mockData
+      name: MOCKDATA
+      type: boolean
+    name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              parameters:
+                type: object
+                properties:
+                  size:
+                    type: string
+                  mockData:
+                    type: boolean
+                required:
+                - size
+            required:
+            - parameters

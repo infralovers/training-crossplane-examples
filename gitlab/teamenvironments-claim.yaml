@@ -1,0 +1,16 @@
+apiVersion: gitlab.organization.io/v1alpha1
+kind: TeamEnvironmentClaim
+metadata:
+  name: team-frontend
+  namespace: frontend-team
+spec:
+  teamName: "Frontend"
+  projectName: "Frontend Application"
+  projectDescription: "Main frontend application repository"
+  visibilityLevel: "internal"
+  environmentVariables:
+    - key: "API_URL"
+      value: "https://api.example.com"
+      protected: true
+    - key: "DEBUG"
+      value: "false"

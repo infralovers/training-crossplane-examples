@@ -1,0 +1,13 @@
+apiVersion: gitlab.crossplane.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: gitlab-provider
+spec:
+  baseURL: https://gitlab.owl.co-dev.training/
+  credentials:
+    method: PersonalAccessToken
+    secretRef:
+      key: token
+      name: gitlab-creds
+      namespace: crossplane-system
+    source: Secret

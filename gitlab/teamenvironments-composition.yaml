@@ -1,0 +1,146 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xteamenvironments.gitlab.organization.io
+spec:
+  compositeTypeRef:
+    apiVersion: gitlab.organization.io/v1alpha1
+    kind: xTeamEnvironment
+  mode: Pipeline
+  pipeline:
+  - step: Create Group
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      # GitLab Group
+      - name: group
+        base:
+          apiVersion: groups.gitlab.crossplane.io/v1alpha1
+          kind: Group
+          spec:
+            forProvider:
+              name: ""  # Will be patched
+              path: ""  # Will be patched
+              visibility: ""  # Will be patched
+            providerConfigRef:
+              name: gitlab-provider
+        patches:
+          # Set group name from composite's teamName
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.teamName
+            toFieldPath: spec.forProvider.name
+          # Set group path from composite's teamName (converted to lowercase)
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.teamName
+            toFieldPath: spec.forProvider.path
+            transforms:
+              - type: string
+                string:
+                  type: Convert
+                  convert: "ToLower"
+          # Set visibility from composite's visibilityLevel
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.visibilityLevel
+            toFieldPath: spec.forProvider.visibility
+          # Set the GroupId for use in the Project
+          - type: ToCompositeFieldPath
+            fromFieldPath: status.atProvider.id
+            toFieldPath: status.groupId
+
+  - step: Create Project
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      # GitLab Project
+      - name: project
+        base:
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
+          kind: Project
+          spec:
+            forProvider:
+              name: ""  # Will be patched
+              description: ""  # Will be patched
+              visibility: ""  # Will be patched
+              namespaceId: 0 # Will be patched
+            providerConfigRef:
+              name: gitlab-provider
+        patches:
+          # Set project name from composite's projectName
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.projectName
+            toFieldPath: spec.forProvider.name
+          # Set project description from composite's projectDescription
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.projectDescription
+            toFieldPath: spec.forProvider.description
+          # Set visibility from composite's visibilityLevel
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.visibilityLevel
+            toFieldPath: spec.forProvider.visibility
+          # Set the namespace (group ID) from the output of the group resource
+          - type: FromCompositeFieldPath
+            fromFieldPath: status.groupId
+            toFieldPath: spec.forProvider.namespaceId
+          # Set the ProjectId for use in Variable configuration
+          - type: ToCompositeFieldPath
+            fromFieldPath: status.atProvider.id
+            toFieldPath: status.projectId
+
+  - step: Set Project Variables
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      # Set Project Variables
+      - name: projectVariable-api-url
+        base:
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
+          kind: Variable
+          spec:
+            forProvider:
+              key: "API_URL"
+              value: ""
+              protected: false
+              masked: false
+              projectId: 0
+            providerConfigRef:
+              name: gitlab-provider
+        patches:
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.environmentVariables[0].value
+            toFieldPath: spec.forProvider.value
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.environmentVariables[0].protected
+            toFieldPath: spec.forProvider.protected
+          - type: FromCompositeFieldPath
+            fromFieldPath: status.projectId
+            toFieldPath: spec.forProvider.projectId
+      - name: projectVariable-debug
+        base:
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
+          kind: Variable
+          spec:
+            forProvider:
+              key: "DEBUG"
+              value: ""
+              protected: false
+              masked: false
+              projectId: 0
+            providerConfigRef:
+              name: gitlab-provider
+        patches:
+          - fromFieldPath: spec.environmentVariables[1].value
+            toFieldPath: spec.forProvider.value
+          - fromFieldPath: spec.environmentVariables[1].protected
+            toFieldPath: spec.forProvider.protected
+          - type: FromCompositeFieldPath
+            fromFieldPath: status.projectId
+            toFieldPath: spec.forProvider.projectId

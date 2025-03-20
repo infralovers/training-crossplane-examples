@@ -1,0 +1,71 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: xteamenvironments.gitlab.organization.io
+spec:
+  group: gitlab.organization.io
+  names:
+    kind: xTeamEnvironment
+    plural: xteamenvironments
+  claimNames:
+    kind: TeamEnvironmentClaim
+    plural: teamenvironmentclaims
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                teamName:
+                  type: string
+                  description: "Name of the team"
+                projectName:
+                  type: string
+                  description: "Name of the project"
+                projectDescription:
+                  type: string
+                  description: "Description of the project"
+                visibilityLevel:
+                  type: string
+                  description: "Visibility level of the group and project"
+                  enum:
+                    - private
+                    - internal
+                    - public
+                  default: private
+                environmentVariables:
+                  type: array
+                  description: "Environment variables to be set on the project"
+                  items:
+                    type: object
+                    properties:
+                      key:
+                        type: string
+                      value:
+                        type: string
+                      protected:
+                        type: boolean
+                        default: false
+                      masked:
+                        type: boolean
+                        default: false
+              required:
+                - teamName
+                - projectName
+            status:
+              type: object
+              properties:
+                groupId:
+                  type: integer
+                  description: "The GitLab group ID"
+                projectId:
+                  type: integer
+                  description: "The GitLab project ID"
+                projectUrl:
+                  type: string
+                  description: "The URL to access the GitLab project"
