@@ -1,0 +1,15 @@
+apiVersion: redis.com/v1alpha1
+kind: DatabaseClaim
+metadata:
+  name: my-db
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: local
+      type: dapr-dev
+  namespace: 12-factor-app
+  architecture: replication
+  statestore:
+    name: events
+  pubsub:
+    name: pubsub
