@@ -34,10 +34,5 @@ spec:
                   properties:
                     name:
                       type: string
-                pubsub:
-                  type: object
-                  properties:
-                    name:
-                      type: string
           required:
           - architecture

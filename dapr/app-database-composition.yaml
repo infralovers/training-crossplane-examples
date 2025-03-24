@@ -33,9 +33,9 @@ spec:
               chart:
                 name: redis
                 repository: https://charts.bitnami.com/bitnami
-                version: "17.8.0"
+                version: "20.11.4"
               values:
-                architecture: standalone
+                architecture: #patched
             providerConfigRef:
               name: default
         patches:
@@ -50,6 +50,8 @@ spec:
                 string:
                   type: Format
                   fmt: "%s-redis"
+          - fromFieldPath: spec.architecture
+            toFieldPath: spec.forProvider.values.architecture
   - step: automatically-detect-ready-composed-resources
     functionRef:
       name: function-auto-ready

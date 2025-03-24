@@ -7,5 +7,4 @@ spec:
     matchLabels:
       provider: local
       type: dev
-  parameters:
-    size: small
+  architecture: standalone
