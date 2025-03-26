@@ -33,7 +33,7 @@ spec:
               chart:
                 name: redis
                 repository: https://charts.bitnami.com/bitnami
-                version: "20.11.4"
+                version: "17.8.0"
               values:
                 architecture: #patched
             providerConfigRef:

@@ -3,7 +3,7 @@ kind: ProviderConfig
 metadata:
   name: gitlab-provider
 spec:
-  baseURL: https://gitlab.owl.co-dev.training/
+  baseURL: https://gitlab.<ENV-ANIMAL>.<ENV-DOMAIN>/
   credentials:
     method: PersonalAccessToken
     secretRef:

@@ -1,9 +1,9 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: xteamenvironments.gitlab.organization.io
+  name: dynamic.xteamenvironments.gitlab.organization.io
   labels:
-    type: static
+    type: dynamic
 spec:
   compositeTypeRef:
     apiVersion: gitlab.organization.io/v1alpha1
@@ -96,53 +96,29 @@ spec:
 
   - step: Set Project Variables
     functionRef:
-      name: function-patch-and-transform
+      name: function-go-templating
     input:
-      apiVersion: pt.fn.crossplane.io/v1beta1
-      kind: Resources
-      resources:
-      # Set Project Variables
-      - name: projectVariable-api-url
-        base:
+      apiVersion: gotemplating.fn.crossplane.io/v1beta1
+      kind: GoTemplate
+      source: Inline
+      inline:
+        template: |
+          {{- range $index, $var := .observed.composite.resource.spec.environmentVariables }}
+          ---
           apiVersion: projects.gitlab.crossplane.io/v1alpha1
           kind: Variable
+          metadata:
+            name: {{ $.observed.composite.resource.metadata.name }}-var-{{ $index }}
+            annotations:
+              gotemplating.fn.crossplane.io/composition-resource-name: "variable-{{ $index }}"
+              gotemplating.fn.crossplane.io/ready: "True"
           spec:
             forProvider:
-              key: "API_URL"
-              value: ""
-              protected: false
-              masked: false
-              projectId: 0
+              key: "{{ $var.key }}"
+              value: "{{ $var.value }}"
+              protected: {{ $var.protected }}
+              masked: {{ default false $var.masked }}
+              projectId: {{ $.observed.composite.resource.status.projectId | int }}
             providerConfigRef:
               name: gitlab-provider
-        patches:
-          - type: FromCompositeFieldPath
-            fromFieldPath: spec.environmentVariables[0].value
-            toFieldPath: spec.forProvider.value
-          - type: FromCompositeFieldPath
-            fromFieldPath: spec.environmentVariables[0].protected
-            toFieldPath: spec.forProvider.protected
-          - type: FromCompositeFieldPath
-            fromFieldPath: status.projectId
-            toFieldPath: spec.forProvider.projectId
-      - name: projectVariable-debug
-        base:
-          apiVersion: projects.gitlab.crossplane.io/v1alpha1
-          kind: Variable
-          spec:
-            forProvider:
-              key: "DEBUG"
-              value: ""
-              protected: false
-              masked: false
-              projectId: 0
-            providerConfigRef:
-              name: gitlab-provider
-        patches:
-          - fromFieldPath: spec.environmentVariables[1].value
-            toFieldPath: spec.forProvider.value
-          - fromFieldPath: spec.environmentVariables[1].protected
-            toFieldPath: spec.forProvider.protected
-          - type: FromCompositeFieldPath
-            fromFieldPath: status.projectId
-            toFieldPath: spec.forProvider.projectId
+          {{- end }}
