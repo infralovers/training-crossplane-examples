@@ -66,6 +66,3 @@ spec:
                 projectId:
                   type: integer
                   description: "The GitLab project ID"
-                projectUrl:
-                  type: string
-                  description: "The URL to access the GitLab project"

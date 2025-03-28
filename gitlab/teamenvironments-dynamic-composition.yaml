@@ -116,8 +116,8 @@ spec:
             forProvider:
               key: "{{ $var.key }}"
               value: "{{ $var.value }}"
-              protected: {{ $var.protected }}
-              masked: {{ default false $var.masked }}
+              protected: {{ $var.protected | default false }}
+              masked: {{ $var.masked | default false }}
               projectId: {{ $.observed.composite.resource.status.projectId | int }}
             providerConfigRef:
               name: gitlab-provider
