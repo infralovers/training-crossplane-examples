@@ -1,0 +1,112 @@
+{
+  "properties": {
+    "claimRef__apiVersion": {
+      "type": "string",
+      "visible": false
+    },
+    "claimRef__kind": {
+      "type": "string",
+      "visible": false
+    },
+    "claimRef__name": {
+      "type": "string",
+      "visible": false
+    },
+    "claimRef__namespace": {
+      "type": "string",
+      "visible": false
+    },
+    "compositionRef__name": {
+      "type": "string",
+      "visible": false
+    },
+    "compositionRevisionRef__name": {
+      "type": "string",
+      "visible": false
+    },
+    "compositionUpdatePolicy": {
+      "type": "string",
+      "enum": [
+        "Automatic",
+        "Manual"
+      ],
+      "visible": false
+    },
+    "compositionSelector__matchLabels__type": {
+      "type": "string",
+      "title": "Composition Type",
+      "enum": [
+        "dynamic",
+        "static"
+      ],
+      "visible": true
+    },
+    "environmentVariables": {
+      "type": "array",
+      "description": "Environment variables to be set on the project",
+      "visible": true
+    },
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "pattern": "^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$"
+    },
+    "namespace": {
+      "type": "string",
+      "title": "Namespace",
+      "default": "default"
+    },
+    "projectDescription": {
+      "type": "string",
+      "description": "Description of the project",
+      "visible": true
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Name of the project"
+    },
+    "publishConnectionDetailsTo__configRef__name": {
+      "type": "string",
+      "visible": false
+    },
+    "publishConnectionDetailsTo__metadata__type": {
+      "type": "string",
+      "visible": false
+    },
+    "publishConnectionDetailsTo__name": {
+      "type": "string",
+      "visible": false
+    },
+    "resourceRefs": {
+      "type": "array",
+      "visible": false
+    },
+    "teamName": {
+      "type": "string",
+      "description": "Name of the team"
+    },
+    "visibilityLevel": {
+      "type": "string",
+      "description": "Visibility level of the group and project",
+      "enum": [
+        "private",
+        "internal",
+        "public"
+      ],
+      "visible": true
+    },
+    "writeConnectionSecretToRef__name": {
+      "type": "string",
+      "visible": false
+    },
+    "writeConnectionSecretToRef__namespace": {
+      "type": "string",
+      "visible": false
+    }
+  },
+  "required": [
+    "teamName",
+    "projectName",
+    "name"
+  ]
+}
