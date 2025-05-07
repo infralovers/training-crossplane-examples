@@ -1,7 +1,7 @@
 apiVersion: redis.com/v1alpha1
 kind: DatabaseClaim
 metadata:
-  name: my-db
+  name: my-dapr-db
 spec:
   compositionSelector:
     matchLabels:
