@@ -1,15 +1,13 @@
-apiVersion: apiextensions.crossplane.io/v1
+apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: xteamenvironments.gitlab.organization.io
+  name: teamenvironments.gitlab.organization.io
 spec:
   group: gitlab.organization.io
+  scope: Namespaced
   names:
-    kind: xTeamEnvironment
-    plural: xteamenvironments
-  claimNames:
-    kind: TeamEnvironmentClaim
-    plural: teamenvironmentclaims
+    kind: TeamEnvironment
+    plural: teamenvironments
   versions:
     - name: v1alpha1
       served: true

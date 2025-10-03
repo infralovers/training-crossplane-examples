@@ -9,7 +9,7 @@ spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:
     apiVersion: redis.com/v1alpha1
-    kind: xDatabase
+    kind: Database
   mode: Pipeline
   pipeline:
   - step: Create Redis

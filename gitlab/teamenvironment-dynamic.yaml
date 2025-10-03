@@ -1,0 +1,23 @@
+apiVersion: gitlab.organization.io/v1alpha1
+kind: TeamEnvironment
+metadata:
+  name: team-backend
+  namespace: backend-team
+spec:
+  crossplane:
+    compositionSelector:
+    matchLabels:
+      type: dynamic
+  teamName: "Backend"
+  projectName: "Backend Application"
+  projectDescription: "Main backend application repository"
+  visibilityLevel: "internal"
+  environmentVariables:
+    - key: "API_URL"
+      value: "https://api.example.com"
+      protected: true
+    - key: "DEBUG"
+      value: "true"
+      protected: false
+    - key: "LOG_LEVEL"
+      value: "info"

@@ -1,0 +1,14 @@
+apiVersion: redis.com/v1alpha1
+kind: Database
+metadata:
+  name: my-dapr-db
+spec:
+  crossplane:
+    compositionSelector:
+    matchLabels:
+      provider: local
+      type: dapr-dev
+  namespace: default
+  architecture: standalone
+  statestore:
+    name: statestore

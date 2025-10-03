@@ -1,13 +1,13 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: dynamic.xteamenvironments.gitlab.organization.io
+  name: dynamic.teamenvironments.gitlab.organization.io
   labels:
     type: dynamic
 spec:
   compositeTypeRef:
     apiVersion: gitlab.organization.io/v1alpha1
-    kind: xTeamEnvironment
+    kind: TeamEnvironment
   mode: Pipeline
   pipeline:
   - step: Create Group

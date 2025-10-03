@@ -1,18 +1,16 @@
-apiVersion: apiextensions.crossplane.io/v1
+apiVersion: apiextensions.crossplane.io/v2
 kind: CompositeResourceDefinition
 metadata:
-  name: xdatabases.redis.com
+  name: databases.redis.com
 spec:
   group: redis.com
+  scope: Namespaced
   names:
-    kind: xDatabase
-    plural: xdatabases
+    kind: Database
+    plural: databases
     shortNames:
-      - "xdb"
-      - "xdbs"
-  claimNames:
-    kind: DatabaseClaim
-    plural: databaseclaims
+      - "db"
+      - "dbs"
   versions:
     - name: v1alpha1
       served: true
