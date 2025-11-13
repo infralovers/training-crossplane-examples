@@ -5,7 +5,7 @@ metadata:
 spec:
   crossplane:
     compositionSelector:
-    matchLabels:
-      provider: local
-      type: dev
+      matchLabels:
+        provider: local
+        type: dev
   architecture: standalone

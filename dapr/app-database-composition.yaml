@@ -21,7 +21,7 @@ spec:
       resources:
       - name: redis-helm-release
         base:
-          apiVersion: helm.crossplane.io/v1beta1
+          apiVersion: helm.m.crossplane.io/v1beta1
           kind: Release
           metadata:
             annotations:
@@ -33,11 +33,11 @@ spec:
               chart:
                 name: redis
                 repository: https://charts.bitnami.com/bitnami
-                version: "17.8.0"
               values:
                 architecture: #patched
             providerConfigRef:
               name: default
+              kind: ProviderConfig
         patches:
           - fromFieldPath: metadata.name
             toFieldPath: metadata.annotations[crossplane.io/external-name]

@@ -5,9 +5,9 @@ metadata:
 spec:
   crossplane:
     compositionSelector:
-    matchLabels:
-      provider: local
-      type: dapr-dev
+      matchLabels:
+        provider: local
+        type: dapr-dev
   namespace: default
   architecture: standalone
   statestore:

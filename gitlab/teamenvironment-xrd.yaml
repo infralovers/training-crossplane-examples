@@ -4,7 +4,7 @@ metadata:
   name: teamenvironments.gitlab.organization.io
 spec:
   group: gitlab.organization.io
-  scope: Namespaced
+  scope: Cluster
   names:
     kind: TeamEnvironment
     plural: teamenvironments

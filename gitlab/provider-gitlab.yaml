@@ -3,4 +3,4 @@ kind: Provider
 metadata:
   name: provider-gitlab
 spec:
-  package: xpkg.upbound.io/crossplane-contrib/provider-gitlab:v0.10.3
+  package: xpkg.upbound.io/crossplane-contrib/provider-gitlab:v0.14.0

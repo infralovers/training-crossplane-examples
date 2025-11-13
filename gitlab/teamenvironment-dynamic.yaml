@@ -6,8 +6,8 @@ metadata:
 spec:
   crossplane:
     compositionSelector:
-    matchLabels:
-      type: dynamic
+      matchLabels:
+        type: dynamic
   teamName: "Backend"
   projectName: "Backend Application"
   projectDescription: "Main backend application repository"

@@ -6,8 +6,8 @@ metadata:
 spec:
   crossplane:
     compositionSelector:
-    matchLabels:
-      type: static
+      matchLabels:
+        type: static
   teamName: "Frontend"
   projectName: "Frontend Application"
   projectDescription: "Main frontend application repository"
