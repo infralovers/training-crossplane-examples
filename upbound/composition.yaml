@@ -1,11 +1,11 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: xteamenvironments.gitlab.organization.io
+  name: teamenvironments.gitlab.organization.io
 spec:
   compositeTypeRef:
     apiVersion: gitlab.organization.io/v1alpha1
-    kind: XTeamEnvironment
+    kind: TeamEnvironment
   mode: Pipeline
   pipeline:
   - step: Create Group
@@ -18,7 +18,7 @@ spec:
       # GitLab Group
       - name: group
         base:
-          apiVersion: groups.gitlab.crossplane.io/v1alpha1 # Check your provider API version!
+          apiVersion: groups.gitlab.crossplane.io/v1alpha1
           kind: Group
           spec:
             forProvider:
@@ -60,7 +60,7 @@ spec:
       # GitLab Project
       - name: project
         base:
-          apiVersion: projects.gitlab.crossplane.io/v1alpha1 # Check your provider API version!
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
           kind: Project
           spec:
             forProvider:
@@ -103,7 +103,7 @@ spec:
         template: |
           {{- range $index, $var := .observed.composite.resource.spec.environmentVariables }}
           ---
-          apiVersion: projects.gitlab.crossplane.io/v1alpha1 # Check your provider API version!
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
           kind: Variable
           metadata:
             name: {{ $.observed.composite.resource.metadata.name }}-var-{{ $index }}
