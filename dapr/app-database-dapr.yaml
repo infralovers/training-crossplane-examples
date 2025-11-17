@@ -1,12 +1,13 @@
 apiVersion: redis.com/v1alpha1
-kind: DatabaseClaim
+kind: Database
 metadata:
   name: my-dapr-db
 spec:
-  compositionSelector:
-    matchLabels:
-      provider: local
-      type: dapr-dev
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        provider: local
+        type: dapr-dev
   namespace: default
   architecture: standalone
   statestore:

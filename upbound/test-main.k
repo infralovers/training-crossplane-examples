@@ -4,10 +4,10 @@ import models.io.upbound.dev.meta.v1alpha1 as metav1alpha1
 
 _items = [
     metav1alpha1.CompositionTest{
-        metadata.name="test-xstoragebucket"
+        metadata.name="test-storagebucket"
         spec= {
             assertResources: [
-                platformv1alpha1.XStorageBucket{
+                platformv1alpha1.StorageBucket{
                     metadata.name: "example"
                     spec.parameters: {
                         acl: "public-read"
@@ -92,9 +92,9 @@ _items = [
                     }
                 }
             ]
-            compositionPath: "apis/xstoragebuckets/composition.yaml"
-            xrPath: "examples/storagebucket/xr.yaml"
-            xrdPath: "apis/xstoragebuckets/definition.yaml"
+            compositionPath: "apis/storagebuckets/composition.yaml"
+            xrPath: "examples/storagebucket/example.yaml"
+            xrdPath: "apis/storagebuckets/definition.yaml"
             timeoutSeconds: 120
             validate: False
         }

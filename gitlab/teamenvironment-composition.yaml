@@ -1,13 +1,13 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: dynamic.xteamenvironments.gitlab.organization.io
+  name: teamenvironments.gitlab.organization.io
   labels:
-    type: dynamic
+    type: static
 spec:
   compositeTypeRef:
     apiVersion: gitlab.organization.io/v1alpha1
-    kind: xTeamEnvironment
+    kind: TeamEnvironment
   mode: Pipeline
   pipeline:
   - step: Create Group
@@ -22,6 +22,8 @@ spec:
         base:
           apiVersion: groups.gitlab.crossplane.io/v1alpha1
           kind: Group
+          metadata:
+            name: ""  # Will be patched
           spec:
             forProvider:
               name: ""  # Will be patched
@@ -30,6 +32,15 @@ spec:
             providerConfigRef:
               name: gitlab-provider
         patches:
+          # Set resource name
+          - type: FromCompositeFieldPath
+            fromFieldPath: metadata.name
+            toFieldPath: metadata.name
+            transforms:
+              - type: string
+                string:
+                  type: Format
+                  fmt: "%s-group"
           # Set group name from composite's teamName
           - type: FromCompositeFieldPath
             fromFieldPath: spec.teamName
@@ -64,6 +75,8 @@ spec:
         base:
           apiVersion: projects.gitlab.crossplane.io/v1alpha1
           kind: Project
+          metadata:
+            name: ""  # Will be patched
           spec:
             forProvider:
               name: ""  # Will be patched
@@ -73,6 +86,15 @@ spec:
             providerConfigRef:
               name: gitlab-provider
         patches:
+          # Set resource name
+          - type: FromCompositeFieldPath
+            fromFieldPath: metadata.name
+            toFieldPath: metadata.name
+            transforms:
+              - type: string
+                string:
+                  type: Format
+                  fmt: "%s-project"
           # Set project name from composite's projectName
           - type: FromCompositeFieldPath
             fromFieldPath: spec.projectName
@@ -96,29 +118,75 @@ spec:
 
   - step: Set Project Variables
     functionRef:
-      name: function-go-templating
+      name: function-patch-and-transform
     input:
-      apiVersion: gotemplating.fn.crossplane.io/v1beta1
-      kind: GoTemplate
-      source: Inline
-      inline:
-        template: |
-          {{- range $index, $var := .observed.composite.resource.spec.environmentVariables }}
-          ---
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      # Set Project Variables
+      - name: projectVariable-api-url
+        base:
           apiVersion: projects.gitlab.crossplane.io/v1alpha1
           kind: Variable
           metadata:
-            name: {{ $.observed.composite.resource.metadata.name }}-var-{{ $index }}
-            annotations:
-              gotemplating.fn.crossplane.io/composition-resource-name: "variable-{{ $index }}"
-              gotemplating.fn.crossplane.io/ready: "True"
+            name: ""  # Will be patched
           spec:
             forProvider:
-              key: "{{ $var.key }}"
-              value: "{{ $var.value }}"
-              protected: {{ $var.protected | default false }}
-              masked: {{ $var.masked | default false }}
-              projectId: {{ $.observed.composite.resource.status.projectId | int }}
+              key: "API_URL"
+              value: ""
+              protected: false
+              masked: false
+              projectId: 0
             providerConfigRef:
               name: gitlab-provider
-          {{- end }}
+        patches:
+          # Set resource name
+          - type: FromCompositeFieldPath
+            fromFieldPath: metadata.name
+            toFieldPath: metadata.name
+            transforms:
+              - type: string
+                string:
+                  type: Format
+                  fmt: "%s-var-api-url"
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.environmentVariables[0].value
+            toFieldPath: spec.forProvider.value
+          - type: FromCompositeFieldPath
+            fromFieldPath: spec.environmentVariables[0].protected
+            toFieldPath: spec.forProvider.protected
+          - type: FromCompositeFieldPath
+            fromFieldPath: status.projectId
+            toFieldPath: spec.forProvider.projectId
+      - name: projectVariable-debug
+        base:
+          apiVersion: projects.gitlab.crossplane.io/v1alpha1
+          kind: Variable
+          metadata:
+            name: ""  # Will be patched
+          spec:
+            forProvider:
+              key: "DEBUG"
+              value: ""
+              protected: false
+              masked: false
+              projectId: 0
+            providerConfigRef:
+              name: gitlab-provider
+        patches:
+          # Set resource name
+          - type: FromCompositeFieldPath
+            fromFieldPath: metadata.name
+            toFieldPath: metadata.name
+            transforms:
+              - type: string
+                string:
+                  type: Format
+                  fmt: "%s-var-debug"
+          - fromFieldPath: spec.environmentVariables[1].value
+            toFieldPath: spec.forProvider.value
+          - fromFieldPath: spec.environmentVariables[1].protected
+            toFieldPath: spec.forProvider.protected
+          - type: FromCompositeFieldPath
+            fromFieldPath: status.projectId
+            toFieldPath: spec.forProvider.projectId

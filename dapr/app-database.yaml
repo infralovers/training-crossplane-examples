@@ -1,0 +1,11 @@
+apiVersion: redis.com/v1alpha1
+kind: Database
+metadata:
+  name: my-db
+spec:
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        provider: local
+        type: dev
+  architecture: standalone

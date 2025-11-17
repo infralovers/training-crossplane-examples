@@ -9,7 +9,7 @@ spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:
     apiVersion: redis.com/v1alpha1
-    kind: xDatabase
+    kind: Database
   mode: Pipeline
   pipeline:
   - step: Create Redis
@@ -21,7 +21,7 @@ spec:
       resources:
       - name: redis-helm-release
         base:
-          apiVersion: helm.crossplane.io/v1beta1
+          apiVersion: helm.m.crossplane.io/v1beta1
           kind: Release
           metadata:
             annotations:
@@ -38,6 +38,7 @@ spec:
                 architecture: #patched
             providerConfigRef:
               name: default
+              kind: ProviderConfig
         patches:
           - fromFieldPath: spec.namespace
             toFieldPath: spec.forProvider.namespace
@@ -66,15 +67,17 @@ spec:
       resources:
       - name: redis-secret
         base:
-          apiVersion: kubernetes.crossplane.io/v1alpha1
+          apiVersion: kubernetes.m.crossplane.io/v1alpha1
           kind: Object
           spec:
             providerConfigRef:
               name: default
+              kind: ProviderConfig
             references:
             - patchesFrom:
                 apiVersion: v1
                 kind: Secret
+                namespace: default
                 fieldPath: data.redis-password
               toFieldPath: data.password
             forProvider:
@@ -89,6 +92,8 @@ spec:
         patches:
           - fromFieldPath: spec.namespace
             toFieldPath: spec.forProvider.manifest.metadata.namespace
+          - fromFieldPath: spec.namespace
+            toFieldPath: spec.references[0].patchesFrom.namespace
           - fromFieldPath: metadata.name
             toFieldPath: spec.forProvider.manifest.metadata.name
             transforms:
@@ -105,11 +110,12 @@ spec:
                 fmt: '%s-redis'
       - name: dapr-statestore
         base:
-          apiVersion: kubernetes.crossplane.io/v1alpha1
+          apiVersion: kubernetes.m.crossplane.io/v1alpha1
           kind: Object
           spec:
             providerConfigRef:
               name: default
+              kind: ProviderConfig
             forProvider:
               manifest:
                 apiVersion: dapr.io/v1alpha1

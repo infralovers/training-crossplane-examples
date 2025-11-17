@@ -1,12 +1,13 @@
 apiVersion: gitlab.organization.io/v1alpha1
-kind: TeamEnvironmentClaim
+kind: TeamEnvironment
 metadata:
   name: team-frontend
   namespace: frontend-team
 spec:
-  compositionSelector:
-    matchLabels:
-      type: static
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        type: static
   teamName: "Frontend"
   projectName: "Frontend Application"
   projectDescription: "Main frontend application repository"
