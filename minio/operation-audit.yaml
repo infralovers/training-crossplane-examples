@@ -1,0 +1,36 @@
+# A one-shot Operation (deck 06): runs a Python function pipeline once to emit a
+# ConfigMap, proving the Operations feature end to end. Uses function-python, the
+# function that declares the operation capability (go-templating is composition-only).
+# Requires: Crossplane started with --enable-operations (the GroupLab does this) AND
+# function-python installed (see function-python.yaml).
+# VALIDATE: function-python v0.2.0 operate() API and rsp.desired.resources shape;
+# python.fn.crossplane.io/v1beta1 Script kind; ops.crossplane.io/v1alpha1 GVK.
+---
+apiVersion: ops.crossplane.io/v1alpha1
+kind: Operation
+metadata:
+  name: audit-report
+spec:
+  mode: Pipeline
+  pipeline:
+    - step: report
+      functionRef:
+        name: crossplane-contrib-function-python
+      input:
+        apiVersion: python.fn.crossplane.io/v1beta1
+        kind: Script
+        script: |
+          from crossplane.function.proto.v1 import run_function_pb2 as fnv1
+
+          def operate(req: fnv1.RunFunctionRequest, rsp: fnv1.RunFunctionResponse):
+              rsp.desired.resources["audit-report"].resource.update({
+                  "apiVersion": "v1",
+                  "kind": "ConfigMap",
+                  "metadata": {
+                      "name": "audit-report",
+                      "namespace": "minio",
+                  },
+                  "data": {
+                      "message": "Operation pipeline ran once.",
+                  },
+              })

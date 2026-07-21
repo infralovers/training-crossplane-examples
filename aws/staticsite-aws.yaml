@@ -1,0 +1,28 @@
+# The same StaticSite request as the MinIO editions, pointed at the AWS
+# Composition via the type: aws label. Nothing else about the request changed.
+#
+# NOTE: S3 bucket names are globally unique across all of AWS. Change siteName
+# to something unlikely to collide, for example add your initials or a suffix.
+---
+apiVersion: web.example.org/v1alpha1
+kind: StaticSite
+metadata:
+  name: hello-aws
+spec:
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        type: aws
+  siteName: hello-aws-CHANGEME
+  pages:
+    - name: index.html
+      content: |
+        <!doctype html><html><body>
+        <h1>Hello from Crossplane, on real S3</h1>
+        <a href="about.html">About</a>
+        </body></html>
+    - name: about.html
+      content: |
+        <!doctype html><html><body>
+        <h1>About</h1><a href="index.html">Home</a>
+        </body></html>

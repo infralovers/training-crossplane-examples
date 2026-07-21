@@ -1,0 +1,10 @@
+# The Go-templating function: loops and conditionals inside a Composition,
+# used by the dynamic StaticSite Composition in deck 05.
+# VALIDATE: package tag.
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-go-templating
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/function-go-templating:v0.11.0

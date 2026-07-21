@@ -1,0 +1,36 @@
+# A StaticSite request (deck 03). One object yields a bucket, a public-read
+# policy, the page content, and the upload Job that publishes it.
+---
+apiVersion: web.example.org/v1alpha1
+kind: StaticSite
+metadata:
+  name: hello-site
+spec:
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        type: static
+  siteName: hello-site
+  pages:
+    - name: index.html
+      content: |
+        <!doctype html>
+        <html>
+          <head><title>Hello from Crossplane</title></head>
+          <body>
+            <h1>Hello from Crossplane</h1>
+            <p>This page was published by a StaticSite composite resource.</p>
+            <p><a href="about.html">About</a></p>
+          </body>
+        </html>
+    - name: about.html
+      content: |
+        <!doctype html>
+        <html>
+          <head><title>About</title></head>
+          <body>
+            <h1>About this site</h1>
+            <p>A bucket, a policy, and an upload Job, from one Kubernetes object.</p>
+            <p><a href="index.html">Home</a></p>
+          </body>
+        </html>

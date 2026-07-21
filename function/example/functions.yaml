@@ -1,0 +1,14 @@
+# Tells crossplane render to talk to the function running locally via
+# `go run . --insecure` instead of pulling an image. The Development runtime
+# connects to localhost:9443 (the SDK's default listen address).
+# No leading `---`: render loads this file as a list of Functions, and a leading
+# empty document (comments before a `---`) makes it fail with "not a function: /".
+# VALIDATE: if render cannot connect, confirm the go run server is up and on 9443.
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-xbuckets
+  annotations:
+    render.crossplane.io/runtime: Development
+spec:
+  package: function-xbuckets

@@ -1,0 +1,33 @@
+# Tells provider-aws-s3 which AWS account to use.
+#
+# Replace the placeholder keys below with your own AWS access key and secret.
+# These create REAL, billable S3 resources. Do not commit real keys.
+#
+# IMPORTANT: apply this only AFTER provider-aws-s3 is Healthy, otherwise the
+# aws.upbound.io ProviderConfig CRD does not exist yet. See the README.
+# VALIDATE: ProviderConfig apiVersion (aws.upbound.io/v1beta1) and the
+# credentials Secret key name ("creds") against the provider docs.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-creds
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  creds: |
+    [default]
+    aws_access_key_id = REPLACE_WITH_YOUR_KEY
+    aws_secret_access_key = REPLACE_WITH_YOUR_SECRET
+---
+apiVersion: aws.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: aws-creds
+      key: creds

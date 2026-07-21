@@ -1,0 +1,12 @@
+# The XBuckets request that crossplane render feeds to the function (deck 04).
+# The function reads spec.names and emits one MinIO Bucket per entry.
+# apiVersion/kind match the composition's compositeTypeRef and the fn_test.go fixture.
+apiVersion: example.crossplane.io/v1
+kind: XBuckets
+metadata:
+  name: example-buckets
+spec:
+  names:
+    - example-a
+    - example-b
+    - example-c

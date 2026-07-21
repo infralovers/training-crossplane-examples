@@ -1,0 +1,13 @@
+# The Python function: the one function that declares the operation capability
+# (capabilities: [composition, operation]), used by the deck-06 Operations GroupLab.
+# function-go-templating and function-patch-and-transform are composition-only, so an
+# Operation cannot use them; it needs this one. At the time of writing, function-python
+# is the function that supports Operations.
+# VALIDATE: package tag; that the installed revision advertises the operation capability.
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Function
+metadata:
+  name: crossplane-contrib-function-python
+spec:
+  package: xpkg.crossplane.io/crossplane-contrib/function-python:v0.2.0

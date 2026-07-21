@@ -1,0 +1,10 @@
+# The MinIO provider (maintained by VSHN). Installs the Bucket, User, and
+# Policy managed resources under the minio.crossplane.io API group.
+# VALIDATE: package path/tag against marketplace / ghcr.io/vshn/provider-minio.
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-minio
+spec:
+  package: ghcr.io/vshn/provider-minio:v0.4.5

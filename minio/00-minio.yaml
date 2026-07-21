@@ -1,0 +1,103 @@
+# MinIO: a local, S3-compatible object store running inside the cluster.
+# This replaces any external cloud/GitLab dependency for the whole course.
+# VALIDATE: image tag and resource sizing against the training VM.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-root
+  namespace: minio
+type: Opaque
+stringData:
+  # Root credentials for the MinIO server itself. Training defaults.
+  MINIO_ROOT_USER: minioadmin
+  MINIO_ROOT_PASSWORD: minioadmin
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data
+  namespace: minio
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: minio
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio:latest
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+          envFrom:
+            - secretRef:
+                name: minio-root
+          ports:
+            - containerPort: 9000
+              name: api
+            - containerPort: 9001
+              name: console
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: minio-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  # LoadBalancer so K3s ServiceLB (klipper) binds these ports on the node itself.
+  # On the single-node training cluster that means the S3 API and the console are
+  # reachable at http://<cluster-node>:9000 and :9001 with no kubectl port-forward.
+  # In-cluster clients (the provider) still use the ClusterIP via
+  # minio.minio.svc.cluster.local:9000, which a LoadBalancer Service keeps.
+  # VALIDATE: EXTERNAL-IP should show the node IP; if it stays <pending>,
+  # ServiceLB is disabled (k3s --disable servicelb) and you need the hostPort
+  # fallback (add hostPort: 9000/9001 to the Deployment container ports).
+  type: LoadBalancer
+  selector:
+    app: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+    - name: console
+      port: 9001
+      targetPort: 9001

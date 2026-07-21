@@ -1,148 +1,86 @@
+// Package main implements the XBuckets composition function for the MinIO
+// edition of the course (deck 04). It reads a list of names from an XBuckets
+// composite resource and emits one MinIO Bucket managed resource per name.
+//
+// The Bucket is built as an UNSTRUCTURED composed resource, so this function has
+// no dependency on the provider-minio Go module (its typed structs pull in
+// crossplane-runtime/v2 and clash with the function SDK). It also imports no
+// crossplane-runtime package directly: it uses the function-sdk-go re-exports and
+// apimachinery's unstructured helpers, so it does not matter which
+// crossplane-runtime version the SDK happens to resolve.
 package main
 
 import (
 	"context"
+	"fmt"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
-
-	"github.com/upbound/provider-aws/apis/s3/v1beta1"
-
-	"github.com/crossplane/function-sdk-go/errors"
 	"github.com/crossplane/function-sdk-go/logging"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/resource/composed"
 	"github.com/crossplane/function-sdk-go/response"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
-// Function returns whatever response you ask it to.
+// Function returns one MinIO Bucket per name in the XBuckets spec.
 type Function struct {
 	fnv1.UnimplementedFunctionRunnerServiceServer
-
 	log logging.Logger
 }
 
-// RunFunction observes an XBuckets composite resource (XR). It adds an S3
-// bucket to the desired state for every entry in the XR's spec.names array.
+// RunFunction reads spec.names from the observed composite and adds a Bucket to
+// the desired state for each name.
 func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (*fnv1.RunFunctionResponse, error) {
-	f.log.Info("Running Function", "tag", req.GetMeta().GetTag())
-
-	// Create a response to the request. This copies the desired state and
-	// pipeline context from the request to the response.
 	rsp := response.To(req, response.DefaultTTL)
 
-	// Read the observed XR from the request. Most functions use the observed XR
-	// to add desired managed resources.
-	xr, err := request.GetObservedCompositeResource(req)
+	oxr, err := request.GetObservedCompositeResource(req)
 	if err != nil {
-		// You can set a custom status condition on the claim. This
-		// allows you to communicate with the user.
-		response.ConditionFalse(rsp, "FunctionSuccess", "InternalError").
-			WithMessage("Something went wrong.").
-			TargetCompositeAndClaim()
-
-		// You can emit an event regarding the claim. This allows you to
-		// communicate with the user. Note that events should be used
-		// sparingly and are subject to throttling
-		response.Warning(rsp, errors.New("something went wrong")).
-			TargetCompositeAndClaim()
-
-		// If the function can't read the XR, the request is malformed. This
-		// should never happen. The function returns a fatal result. This tells
-		// Crossplane to stop running functions and return an error.
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get observed composite resource from %T", req))
+		response.Fatal(rsp, fmt.Errorf("cannot get observed composite resource: %w", err))
 		return rsp, nil
 	}
 
-	// Create an updated logger with useful information about the XR.
-	log := f.log.WithValues(
-		"xr-version", xr.Resource.GetAPIVersion(),
-		"xr-kind", xr.Resource.GetKind(),
-		"xr-name", xr.Resource.GetName(),
-	)
-
-	// Get the region from the XR. The XR has getter methods like GetString,
-	// GetBool, etc. You can use them to get values by their field path.
-	region, err := xr.Resource.GetString("spec.region")
+	names, err := oxr.Resource.GetStringArray("spec.names")
 	if err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot read spec.region field of %s", xr.Resource.GetKind()))
+		response.Fatal(rsp, fmt.Errorf("cannot read spec.names from the XBuckets resource: %w", err))
 		return rsp, nil
 	}
 
-	// Get the array of bucket names from the XR.
-	names, err := xr.Resource.GetStringArray("spec.names")
-	if err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot read spec.names field of %s", xr.Resource.GetKind()))
-		return rsp, nil
-	}
-
-	// Get all desired composed resources from the request. The function will
-	// update this map of resources, then save it. This get, update, set pattern
-	// ensures the function keeps any resources added by other functions.
 	desired, err := request.GetDesiredComposedResources(req)
 	if err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get desired resources from %T", req))
+		response.Fatal(rsp, fmt.Errorf("cannot get desired composed resources: %w", err))
 		return rsp, nil
 	}
 
-	// Add v1beta1 types (including Bucket) to the composed resource scheme.
-	// composed.From uses this to automatically set apiVersion and kind.
-	_ = v1beta1.AddToScheme(composed.Scheme)
-
-	// Add a desired S3 bucket for each name.
 	for _, name := range names {
-		// One advantage of writing a function in Go is strong typing. The
-		// function can import and use managed resource types from the provider.
-		b := &v1beta1.Bucket{
-			ObjectMeta: metav1.ObjectMeta{
-				// Set the external name annotation to the desired bucket name.
-				// This controls what the bucket will be named in AWS.
-				Annotations: map[string]string{
-					"crossplane.io/external-name": name,
-				},
-			},
-			Spec: v1beta1.BucketSpec{
-				ForProvider: v1beta1.BucketParameters{
-					// Set the bucket's region to the value read from the XR.
-					Region: ptr.To[string](region),
-				},
-			},
-		}
+		// Build the MinIO Bucket as an unstructured object: set only the fields
+		// the provider understands, no Go types from provider-minio required.
+		b := composed.New()
+		b.SetAPIVersion("minio.crossplane.io/v1")
+		b.SetKind("Bucket")
+		b.SetName(name)
 
-		// Convert the bucket to the unstructured resource data format the SDK
-		// uses to store desired composed resources.
-		cd, err := composed.From(b)
-		if err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot convert %T to %T", b, &composed.Unstructured{}))
+		if err := unstructured.SetNestedField(b.Object, name, "spec", "forProvider", "bucketName"); err != nil {
+			response.Fatal(rsp, fmt.Errorf("cannot set bucketName for %q: %w", name, err))
+			return rsp, nil
+		}
+		if err := unstructured.SetNestedField(b.Object, "us-east-1", "spec", "forProvider", "region"); err != nil {
+			response.Fatal(rsp, fmt.Errorf("cannot set region for %q: %w", name, err))
+			return rsp, nil
+		}
+		if err := unstructured.SetNestedField(b.Object, "default", "spec", "providerConfigRef", "name"); err != nil {
+			response.Fatal(rsp, fmt.Errorf("cannot set providerConfigRef for %q: %w", name, err))
 			return rsp, nil
 		}
 
-		// Add the bucket to the map of desired composed resources. It's
-		// important that the function adds the same bucket every time it's
-		// called. It's also important that the bucket is added with the same
-		// resource.Name every time it's called. The function prefixes the name
-		// with "xbuckets-" to avoid collisions with any other composed
-		// resources that might be in the desired resources map.
-		desired[resource.Name("xbuckets-"+name)] = &resource.DesiredComposed{Resource: cd}
+		desired[resource.Name(fmt.Sprintf("bucket-%s", name))] = &resource.DesiredComposed{Resource: b}
 	}
 
-	// Finally, save the updated desired composed resources to the response.
 	if err := response.SetDesiredComposedResources(rsp, desired); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot set desired composed resources in %T", rsp))
+		response.Fatal(rsp, fmt.Errorf("cannot set desired composed resources: %w", err))
 		return rsp, nil
 	}
 
-	// Log what the function did. This will only appear in the function's pod
-	// logs. A function can use response.Normal and response.Warning to emit
-	// Kubernetes events associated with the XR it's operating on.
-	log.Info("Added desired buckets", "region", region, "count", len(names))
-
-	// You can set a custom status condition on the claim. This allows you
-	// to communicate with the user.
-	response.ConditionTrue(rsp, "FunctionSuccess", "Success").
-		TargetCompositeAndClaim()
-
+	f.log.Info("Added buckets to desired state", "count", len(names))
 	return rsp, nil
 }

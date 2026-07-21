@@ -1,0 +1,29 @@
+# Tells provider-minio where MinIO is and how to authenticate to it.
+# The credentials Secret uses the AWS_* key names the provider expects; values
+# are the MinIO root credentials. Schema matches the vshn/provider-minio sample
+# (samples/minio.crossplane.io_providerconfig.yaml).
+#
+# IMPORTANT: apply this only AFTER provider-minio is Healthy, otherwise the
+# ProviderConfig CRD does not exist yet. See the README for the kubectl wait.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-creds
+  namespace: crossplane-system
+type: Opaque
+stringData:
+  AWS_ACCESS_KEY_ID: minioadmin
+  AWS_SECRET_ACCESS_KEY: minioadmin
+---
+apiVersion: minio.crossplane.io/v1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  minioURL: http://minio.minio.svc.cluster.local:9000
+  credentials:
+    source: InjectedIdentity
+    apiSecretRef:
+      namespace: crossplane-system
+      name: minio-creds

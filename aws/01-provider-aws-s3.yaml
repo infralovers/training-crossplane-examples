@@ -1,0 +1,14 @@
+# The Upbound AWS S3 provider (grand finale, deck 08).
+# Installs the S3 managed resources (Bucket, BucketPolicy, Object,
+# BucketWebsiteConfiguration, BucketPublicAccessBlock) under the
+# s3.aws.upbound.io API group. It pulls provider-family-aws as a dependency,
+# which supplies the shared ProviderConfig CRD used by 02-providerconfig-aws.yaml.
+# VALIDATE: package tag against the Upbound Marketplace (upbound/provider-aws-s3).
+# Note: Upbound official packages may require a (free) Upbound subscription.
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-aws-s3
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws-s3:v1.21.1

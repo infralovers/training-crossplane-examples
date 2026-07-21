@@ -1,0 +1,17 @@
+# A minimal Pipeline Composition with one step: our XBuckets function.
+# Used only by crossplane render (deck 04); the function turns the XBuckets
+# request into MinIO Buckets. compositeTypeRef must match example/xr.yaml.
+# No leading `---`: keep this file a single Composition document for render.
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xbuckets
+spec:
+  compositeTypeRef:
+    apiVersion: example.crossplane.io/v1
+    kind: XBuckets
+  mode: Pipeline
+  pipeline:
+    - step: create-buckets
+      functionRef:
+        name: function-xbuckets

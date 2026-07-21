@@ -1,0 +1,14 @@
+# Warm-up (deck 02): a single Bucket managed resource. Apply it, watch it become
+# READY, then delete the bucket in the MinIO console and watch Crossplane recreate it.
+---
+apiVersion: minio.crossplane.io/v1
+kind: Bucket
+metadata:
+  name: example-bucket
+spec:
+  forProvider:
+    # bucketName is optional; provider-minio uses metadata.name if omitted.
+    bucketName: example-bucket
+    region: us-east-1
+  providerConfigRef:
+    name: default

@@ -1,0 +1,58 @@
+# The StaticSite custom API. A developer asks for a named site and a list of
+# pages; the Composition turns that into a MinIO bucket plus the Kubernetes
+# objects that upload and serve the content.
+#
+# The `pages` array is present from the start. The deck-03 (static) Composition
+# handles a fixed two pages; the deck-05 (dynamic) Composition loops the array.
+---
+apiVersion: apiextensions.crossplane.io/v2
+kind: CompositeResourceDefinition
+metadata:
+  name: staticsites.web.example.org
+spec:
+  # MinIO managed resources are cluster-scoped, so the XR is too.
+  scope: Cluster
+  group: web.example.org
+  names:
+    kind: StaticSite
+    plural: staticsites
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                siteName:
+                  type: string
+                  description: "Bucket name and site identifier"
+                pages:
+                  type: array
+                  description: "Pages to publish; each becomes a file in the bucket"
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "File name, e.g. index.html"
+                      content:
+                        type: string
+                        description: "HTML content of the page"
+                    required:
+                      - name
+                      - content
+              required:
+                - siteName
+            status:
+              type: object
+              properties:
+                bucketName:
+                  type: string
+                  description: "The created bucket"
+                url:
+                  type: string
+                  description: "In-cluster URL of the site"

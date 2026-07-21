@@ -1,0 +1,10 @@
+# provider-kubernetes uses the in-cluster identity of its ServiceAccount
+# (the one we bound to cluster-admin) to create objects in this same cluster.
+---
+apiVersion: kubernetes.crossplane.io/v1alpha1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: InjectedIdentity

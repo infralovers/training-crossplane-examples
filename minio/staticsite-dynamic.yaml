@@ -1,0 +1,29 @@
+# A dynamic StaticSite request (deck 05): three pages, no Composition change
+# needed. Selects the type: dynamic Composition.
+---
+apiVersion: web.example.org/v1alpha1
+kind: StaticSite
+metadata:
+  name: docs-site
+spec:
+  crossplane:
+    compositionSelector:
+      matchLabels:
+        type: dynamic
+  siteName: docs-site
+  pages:
+    - name: index.html
+      content: |
+        <!doctype html>
+        <html><head><title>Docs</title></head>
+        <body><h1>Docs home</h1><p><a href="guide.html">Guide</a> | <a href="faq.html">FAQ</a></p></body></html>
+    - name: guide.html
+      content: |
+        <!doctype html>
+        <html><head><title>Guide</title></head>
+        <body><h1>Guide</h1><p>One page per entry in the pages list.</p></body></html>
+    - name: faq.html
+      content: |
+        <!doctype html>
+        <html><head><title>FAQ</title></head>
+        <body><h1>FAQ</h1><p>Add a fourth page and nothing in the Composition changes.</p></body></html>

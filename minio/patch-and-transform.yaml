@@ -1,0 +1,10 @@
+# The patch-and-transform function: the gentlest composition function, used by
+# the static StaticSite Composition in deck 03.
+# VALIDATE: package tag.
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-patch-and-transform
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/function-patch-and-transform:v0.9.1
