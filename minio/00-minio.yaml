@@ -1,6 +1,8 @@
 # MinIO: a local, S3-compatible object store running inside the cluster.
 # This replaces any external cloud/GitLab dependency for the whole course.
-# VALIDATE: image tag and resource sizing against the training VM.
+# Image: Docker Hub minio/minio is gone (MinIO stopped publishing community images),
+# so we use Chainguard's free build. It runs as UID 65532; fsGroup keeps /data writable.
+# VALIDATE: resource sizing against the training VM.
 ---
 apiVersion: v1
 kind: Namespace
@@ -47,9 +49,11 @@ spec:
       labels:
         app: minio
     spec:
+      securityContext:
+        fsGroup: 65532
       containers:
         - name: minio
-          image: minio/minio:latest
+          image: cgr.dev/chainguard/minio:latest
           args:
             - server
             - /data
